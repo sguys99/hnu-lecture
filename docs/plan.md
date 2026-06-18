@@ -182,16 +182,16 @@
 **의존성:** 모든 Phase 완료
 
 ### 8-1. 상대 경로·배포 점검
-- [ ] 모든 자원(`styles.css`, `app.js`, `data/questions.json`, 폰트)이 **상대 경로**로 로드되는지 확인(서브패스 `username.github.io/repo/` 가정)
-- [ ] GitHub Pages 설정(브랜치/디렉토리) 및 배포
+- [x] 모든 자원(`styles.css`, `app.js`, `data/questions.json`, 폰트)이 **상대 경로**로 로드되는지 확인(서브패스 `username.github.io/repo/` 가정) — 절대경로 0건, 부모 디렉토리에서 `/hnu-lecture/` 서브패스 서빙 시 5개 자원 전부 200(html/css/js/json/font) 확인
+- [ ] GitHub Pages 설정(브랜치/디렉토리) 및 배포 — 코드는 origin/main에 푸시 완료. **Pages 활성화는 사용자 수동 작업 필요**(Settings → Pages → Source: `main` / `/ (root)`). `gh` CLI·토큰 부재로 자동화 불가, 현재 라이브 URL 404
 
 ### 8-2. 성공 지표 검증 (PRD §10)
-- [ ] 답변 완성도: 19문항 전부 작성(400자 미만·개조식)
-- [ ] 핵심 플로우: 카드 그리드 → 카드 클릭 → 상세 전환 → 목록 복귀 정상
-- [ ] 딥링크: `#/q/N` 새로고침·직접 진입 시 상세 유지
-- [ ] 디자인 일관성: `#0066cc`, radius 18px, 본문 17px, 그림자 미사용 준수
-- [ ] 반응형: 데스크톱 3~4열 → 태블릿 2열 → 모바일 1열 전환
-- [ ] 배포: GitHub Pages(서브패스) 상대 경로 정상 동작
+- [x] 답변 완성도: 19문항 전부 작성(400자 미만·개조식) — 19/19 작성, visible 길이 143~203자
+- [x] 핵심 플로우: 카드 그리드 → 카드 클릭 → 상세 전환 → 목록 복귀 정상 — 코드 레벨 확인(`router`/`renderMain`/`renderDetail`/`.detail__back`), 브라우저 채널 부재로 수동 재확인 권장
+- [x] 딥링크: `#/q/N` 새로고침·직접 진입 시 상세 유지 — `parseHash`(`#/q/(\d+)`) + 초기 `router()` 호출, 없는 id는 `#/` 폴백 확인
+- [x] 디자인 일관성: `#0066cc`, radius 18px, 본문 17px, 그림자 미사용 준수 — `--link:#0066cc`(단일), `--radius-lg:18px`, `--fs-body:17px`, `box-shadow` 0건
+- [x] 반응형: 데스크톱 3~4열 → 태블릿 2열 → 모바일 1열 전환 — 1fr(기본) → 640px 2열 → 1024px 3열
+- [ ] 배포: GitHub Pages(서브패스) 상대 경로 정상 동작 — Pages 활성화 후 라이브 URL 재검증 필요
 
 ---
 
