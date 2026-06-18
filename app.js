@@ -27,6 +27,139 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+/* ============================================================
+   마크다운 미니 파서 (Phase 5) — 외부 의존성 없는 경량 MD→HTML.
+   지원: 굵게(**), 기울임(*), 불릿(-), 번호(1.), 표(| |),
+        제목(##/###), 인라인 링크([텍스트](url)), 문단/줄바꿈.
+   안전: 모든 텍스트는 escapeHtml 선통과 후 화이트리스트 태그만 주입.
+   ============================================================ */
+
+// 안전한 링크 스킴만 허용(javascript: 등 차단).
+const SAFE_URL = /^(https?:\/\/|mailto:|#|\/|\.\/)/i;
+
+// 인라인 변환: 이스케이프 → 링크 → 굵게 → 기울임.
+function renderInline(text) {
+  let out = escapeHtml(text);
+  // 링크 [텍스트](url) — 화이트리스트 스킴만 <a>로, 그 외엔 원문 유지.
+  out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
+    const href = url.trim();
+    if (!SAFE_URL.test(href)) return match;
+    return `<a href="${href.replace(/"/g, '&quot;')}">${label}</a>`;
+  });
+  // 굵게(**)를 기울임(*)보다 먼저 처리해 ** 구분자를 선소거.
+  out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  return out;
+}
+
+// 표 블록(헤더행 + 구분선 + 본문행) → <table>.
+function renderTable(lines) {
+  const toCells = (line) =>
+    line
+      .trim()
+      .replace(/^\||\|$/g, '') // 양끝 파이프 제거
+      .split('|')
+      .map((c) => c.trim());
+  const head = toCells(lines[0]);
+  const body = lines.slice(2).map(toCells);
+  const thead = `<thead><tr>${head
+    .map((c) => `<th>${renderInline(c)}</th>`)
+    .join('')}</tr></thead>`;
+  const tbody = `<tbody>${body
+    .map(
+      (row) =>
+        `<tr>${row.map((c) => `<td>${renderInline(c)}</td>`).join('')}</tr>`
+    )
+    .join('')}</tbody>`;
+  return `<table>${thead}${tbody}</table>`;
+}
+
+// 블록 토크나이저: 빈 줄을 경계로 블록을 분류해 HTML로 변환.
+function parseMarkdown(md) {
+  const lines = String(md).replace(/\r\n/g, '\n').split('\n');
+  const html = [];
+  let i = 0;
+
+  const isTableSep = (line) =>
+    line != null && /^\s*\|?[\s:|-]+\|?\s*$/.test(line) && line.includes('-');
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // 빈 줄 — 블록 경계.
+    if (!line.trim()) {
+      i++;
+      continue;
+    }
+
+    // 표: 현재 줄이 파이프를 포함하고 다음 줄이 구분선.
+    if (line.includes('|') && isTableSep(lines[i + 1])) {
+      const tbl = [lines[i], lines[i + 1]];
+      i += 2;
+      while (i < lines.length && lines[i].includes('|') && lines[i].trim()) {
+        tbl.push(lines[i]);
+        i++;
+      }
+      html.push(renderTable(tbl));
+      continue;
+    }
+
+    // 제목 ##/### (#도 h2로).
+    const heading = line.match(/^(#{1,3})\s+(.*)$/);
+    if (heading) {
+      const level = heading[1].length >= 3 ? 3 : 2;
+      html.push(`<h${level}>${renderInline(heading[2].trim())}</h${level}>`);
+      i++;
+      continue;
+    }
+
+    // 순서 목록.
+    if (/^\s*\d+\.\s+/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) {
+        items.push(renderInline(lines[i].replace(/^\s*\d+\.\s+/, '')));
+        i++;
+      }
+      html.push(`<ol>${items.map((t) => `<li>${t}</li>`).join('')}</ol>`);
+      continue;
+    }
+
+    // 불릿 목록.
+    if (/^\s*-\s+/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\s*-\s+/.test(lines[i])) {
+        items.push(renderInline(lines[i].replace(/^\s*-\s+/, '')));
+        i++;
+      }
+      html.push(`<ul>${items.map((t) => `<li>${t}</li>`).join('')}</ul>`);
+      continue;
+    }
+
+    // 그 외 — 문단(연속 비빈 줄 묶음). 단독 **굵게** 줄은 소제목으로 승격.
+    const isBlockStart = (ln, next) =>
+      /^\s*(-\s+|\d+\.\s+|#{1,3}\s+)/.test(ln) ||
+      (ln.includes('|') && isTableSep(next));
+    const para = [];
+    while (
+      i < lines.length &&
+      lines[i].trim() &&
+      !isBlockStart(lines[i], lines[i + 1])
+    ) {
+      para.push(lines[i]);
+      i++;
+    }
+    const joined = para.join('\n');
+    if (para.length === 1 && /^\*\*[^*]+\*\*$/.test(joined.trim())) {
+      const inner = joined.trim().replace(/^\*\*|\*\*$/g, '');
+      html.push(`<h4 class="prose-subhead">${renderInline(inner)}</h4>`);
+    } else {
+      html.push(`<p>${renderInline(joined).replace(/\n/g, '<br>')}</p>`);
+    }
+  }
+
+  return html.join('');
+}
+
 // 해당 Part의 문항 목록.
 function questionsByPart(part) {
   return QUESTIONS.filter((q) => q.part === part);
@@ -125,13 +258,12 @@ function renderMain() {
   });
 }
 
-// 답변 렌더 훅 — Phase 4는 평문(pre-wrap)으로 안전 표시.
-// Phase 5에서 escapeHtml(answer) → parseMarkdown(answer)로 교체합니다.
+// 답변 렌더 훅 — 마크다운을 미니 파서로 HTML 변환해 주입(Phase 5).
 function renderAnswer(answer) {
   if (!answer || !answer.trim()) {
     return '<p class="detail__answer detail__answer--empty">답변 준비 중입니다.</p>';
   }
-  return `<div class="prose detail__answer">${escapeHtml(answer)}</div>`;
+  return `<div class="prose detail__answer">${parseMarkdown(answer)}</div>`;
 }
 
 // 이전/다음 문항 내비게이션(인접 id 기준, 1~19 범위 안에서만).
