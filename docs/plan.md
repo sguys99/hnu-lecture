@@ -45,16 +45,16 @@
 **의존성:** Phase 0
 
 ### 1-1. 스키마 확정
-- [ ] PRD §6.1 필드(`id`, `part`, `partTitle`, `title`, `question`, `answer`) 기준으로 JSON 스키마 확정
-- [ ] Part 구성 매핑 확정: Part 1(Q1~Q6) / Part 2(Q7~Q11) / Part 3(Q12~Q19)
+- [x] PRD §6.1 필드(`id`, `part`, `partTitle`, `title`, `question`, `answer`) 기준으로 JSON 스키마 확정
+- [x] Part 구성 매핑 확정: Part 1(Q1~Q6) / Part 2(Q7~Q11) / Part 3(Q12~Q19)
 
 ### 1-2. 질문 19개 메타·전문 채우기(답변 제외)
-- [ ] `docs/question.md`의 19문항 소제목·질문 전문을 **원문 그대로** `questions.json`에 입력(`answer`는 빈 문자열로 보류)
-- [ ] `id` 1~19, `part`/`partTitle` 정확히 매핑
+- [x] `docs/question.md`의 19문항 소제목·질문 전문을 **원문 그대로** `questions.json`에 입력(`answer`는 빈 문자열로 보류)
+- [x] `id` 1~19, `part`/`partTitle` 정확히 매핑
 
 ### 1-3. 샘플 답변 1~2개 + 검증
-- [ ] 대표 1~2문항에 마크다운 답변(불릿+표 포함) 임시 작성 → 렌더링 파이프라인 테스트용 시드 확보
-- [ ] JSON 유효성 검사(`python3 -m json.tool data/questions.json`)
+- [x] 대표 1~2문항에 마크다운 답변(불릿+표 포함) 임시 작성 → 렌더링 파이프라인 테스트용 시드 확보(Q1: 불릿·번호·강조·표, Q19: 입장형 답변)
+- [x] JSON 유효성 검사(`python3 -m json.tool data/questions.json`)
 
 ---
 
