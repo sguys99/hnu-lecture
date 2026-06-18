@@ -6,6 +6,16 @@
   <title>AI 세미나 Q&A</title>
   <meta name="description" content="대학원생 대상 AI 세미나에서 수집한 19개 질문과 답변 모음" />
 
+  <!-- 테마 부트스트랩: 페인트 전 저장값 적용(FOUC 방지). 저장값 없으면 prefers-color-scheme 폴백 -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- Pretendard (CDN) -->
   <link
     rel="stylesheet"
@@ -20,7 +30,23 @@
     <div class="container">
       <h1 class="site-title">AI 세미나 Q&amp;A</h1>
       <div class="header-actions">
-        <!-- ThemeToggle (Phase 6에서 구현) -->
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="다크 모드로 전환">
+          <!-- 라이트: 해(현재 모드 표시) / 다크: 달 — 표시 전환은 CSS가 담당 -->
+          <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2" /><path d="M12 20v2" />
+            <path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" />
+            <path d="M2 12h2" /><path d="M20 12h2" />
+            <path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" />
+          </svg>
+          <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true" focusable="false">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </svg>
+        </button>
       </div>
     </div>
   </header>

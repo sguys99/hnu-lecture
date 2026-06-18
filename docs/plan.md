@@ -135,16 +135,16 @@
 **의존성:** Phase 3, Phase 4, Phase 5
 
 ### 6-1. 반응형 레이아웃
-- [ ] 카드 그리드: 데스크톱 3~4열 → 태블릿 2열 → 모바일 1열(`DESIGN.md` 브레이크포인트 기준)
-- [ ] 상세 뷰 가독 폭 제한 + 모바일 패딩 조정
+- [x] 카드 그리드: 데스크톱 3열(참조 repo 동일) → 태블릿 2열(640px) → 모바일 1열(1024px 분기) — Phase 3에서 구현, 참조와 일치 확인
+- [x] 상세 뷰 가독 폭 제한(`--reading-max: 672px`) + 모바일 좌우 패딩 축소(≤640px `--space-md`)
 
 ### 6-2. 다크모드 토글
-- [ ] `ThemeToggle` UI(헤더) + `[data-theme]` 전환 로직
-- [ ] 선택값 `localStorage` 저장 + 초기 로드 시 시스템 설정(`prefers-color-scheme`) 존중
+- [x] `ThemeToggle` UI(헤더, lucide 스타일 Sun/Moon 인라인 SVG·ghost 버튼) + `[data-theme]` 전환 로직(`app.js`)
+- [x] 선택값 `localStorage`(`theme`) 저장 + 초기 로드 시 시스템 설정(`prefers-color-scheme`) 존중 + `<head>` 부트스트랩으로 FOUC 방지
 
 ### 6-3. 접근성·내비게이션
-- [ ] 터치 타깃 ≥ 44×44px 확인, 키보드 포커스 링(`#0071e3`)·탭 이동 지원
-- [ ] 브라우저 뒤로가기로 메인↔상세 이동 정상 동작 재확인
+- [x] 터치 타깃 ≥ 44×44px(토글 44×44) 확인, 전역 `:focus-visible` 포커스 링·네이티브 `<button>` 키보드 지원, 동적 한국어 `aria-label`
+- [x] 브라우저 뒤로가기로 메인↔상세 이동 정상 동작 재확인(기존 라우터 회귀 점검)
 
 ---
 

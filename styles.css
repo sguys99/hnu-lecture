@@ -218,6 +218,49 @@ button {
   gap: var(--space-sm);
 }
 
+/* 다크모드 토글 — ghost 버튼(투명·보더 없음), 그림자 금지, 터치 타깃 ≥ 44px */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--foreground);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.theme-toggle:hover {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+/* 아이콘 표시 규칙(참조 동일): 라이트=해 / 다크=달. JS 아이콘 스왑 불필요 */
+.theme-toggle .icon-moon {
+  display: none;
+}
+.theme-toggle .icon-sun {
+  display: block;
+}
+
+[data-theme="dark"] .theme-toggle .icon-sun {
+  display: none;
+}
+[data-theme="dark"] .theme-toggle .icon-moon {
+  display: block;
+}
+
+/* 시스템 다크(명시적 속성 미설정) 폴백 — 토큰 폴백과 일관 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-toggle .icon-sun {
+    display: none;
+  }
+  :root:not([data-theme="light"]) .theme-toggle .icon-moon {
+    display: block;
+  }
+}
+
 /* ============================================================
    6. 메인
    ============================================================ */
@@ -598,6 +641,17 @@ button {
 @media (min-width: 1024px) {
   .card-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* 좁은 화면 좌우 패딩 축소(참조: px-4 → md:px-6) */
+@media (max-width: 640px) {
+  .container,
+  .site-footer {
+    padding-inline: var(--space-md);
+  }
+  #app {
+    padding: var(--space-lg) var(--space-md);
   }
 }
 

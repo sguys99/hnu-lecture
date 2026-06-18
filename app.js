@@ -333,9 +333,42 @@ function router() {
 }
 
 /* ============================================================
+   다크모드 토글 (라이트 우선 · 시스템 존중 · localStorage 영속)
+   속성 적용 자체는 <head> 부트스트랩이 페인트 전에 처리. 여기선
+   버튼 동기화 + 사용자 토글만 담당한다.
+   ============================================================ */
+// 현재 적용 중인 테마 판정: 명시적 data-theme → 없으면 시스템 설정.
+function currentTheme() {
+  const explicit = document.documentElement.getAttribute('data-theme');
+  if (explicit === 'dark' || explicit === 'light') return explicit;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+// 버튼 aria-label을 "전환될 모드" 기준으로 갱신.
+function syncToggleLabel(btn) {
+  const next = currentTheme() === 'dark' ? '라이트' : '다크';
+  btn.setAttribute('aria-label', next + ' 모드로 전환');
+}
+
+function initTheme() {
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  syncToggleLabel(btn);
+  btn.addEventListener('click', () => {
+    const next = currentTheme() === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem('theme', next);
+    } catch (e) {}
+    syncToggleLabel(btn);
+  });
+}
+
+/* ============================================================
    초기화
    ============================================================ */
 async function init() {
+  initTheme(); // 데이터 로드와 무관 — fetch 실패와 상관없이 토글 보장
   try {
     await loadData();
     window.addEventListener('hashchange', router);
