@@ -1,6 +1,6 @@
 // AI 세미나 Q&A — 애플리케이션 로직
 // Phase 3: 데이터 로드 + 메인 뷰(히어로 + 필터 탭 + Part별 카드 그리드) + 카드 클릭.
-// 해시 라우팅·상세 뷰는 Phase 4, MD 미니 파서는 Phase 5에서 확장합니다.
+// Phase 4: 해시 라우팅(#/ ↔ #/q/{id}) + 상세 뷰 + 딥링크. MD 미니 파서는 Phase 5에서 확장합니다.
 
 'use strict';
 
@@ -125,8 +125,79 @@ function renderMain() {
   });
 }
 
+// 답변 렌더 훅 — Phase 4는 평문(pre-wrap)으로 안전 표시.
+// Phase 5에서 escapeHtml(answer) → parseMarkdown(answer)로 교체합니다.
+function renderAnswer(answer) {
+  if (!answer || !answer.trim()) {
+    return '<p class="detail__answer detail__answer--empty">답변 준비 중입니다.</p>';
+  }
+  return `<div class="prose detail__answer">${escapeHtml(answer)}</div>`;
+}
+
+// 이전/다음 문항 내비게이션(인접 id 기준, 1~19 범위 안에서만).
+function detailNavHtml(q) {
+  const prev = QUESTIONS.find((item) => item.id === q.id - 1);
+  const next = QUESTIONS.find((item) => item.id === q.id + 1);
+  const prevHtml = prev
+    ? `<a class="detail__nav-link" href="#/q/${prev.id}">← 이전 · Q${prev.id}</a>`
+    : '<span class="detail__nav-link is-disabled" aria-hidden="true"></span>';
+  const nextHtml = next
+    ? `<a class="detail__nav-link detail__nav-link--next" href="#/q/${next.id}">다음 · Q${next.id} →</a>`
+    : '<span class="detail__nav-link is-disabled" aria-hidden="true"></span>';
+  return `<nav class="detail__nav" aria-label="질문 이동">${prevHtml}${nextHtml}</nav>`;
+}
+
+function renderDetail(q) {
+  app.innerHTML = `
+    <article class="detail">
+      <a class="detail__back" href="#/">← 목록으로</a>
+      <header class="detail__header">
+        <div class="detail__meta">
+          <span class="q-card__num">Q${q.id}</span>
+          <span class="q-badge">Part ${q.part}</span>
+        </div>
+        <h1 class="detail__title">${escapeHtml(q.title)}</h1>
+      </header>
+      <section class="detail__section">
+        <div class="detail__label">질문</div>
+        <p class="detail__question">${escapeHtml(q.question)}</p>
+      </section>
+      <section class="detail__section">
+        <div class="detail__label">답변</div>
+        ${renderAnswer(q.answer)}
+      </section>
+      ${detailNavHtml(q)}
+    </article>`;
+}
+
 function renderError(message) {
   app.innerHTML = `<p class="load-error">${escapeHtml(message)}</p>`;
+}
+
+/* ============================================================
+   해시 라우터 (#/ ↔ #/q/{id})
+   ============================================================ */
+// location.hash → { view: 'main' } | { view: 'detail', id }
+function parseHash() {
+  const m = location.hash.match(/^#\/q\/(\d+)$/);
+  if (m) return { view: 'detail', id: Number(m[1]) };
+  return { view: 'main' };
+}
+
+// 현재 해시에 맞는 뷰를 렌더. 없는 id는 메인으로 폴백.
+function router() {
+  const route = parseHash();
+  if (route.view === 'detail') {
+    const q = QUESTIONS.find((item) => item.id === route.id);
+    if (!q) {
+      location.hash = '#/'; // → hashchange가 다시 router 호출 → 메인
+      return;
+    }
+    renderDetail(q);
+    window.scrollTo(0, 0);
+    return;
+  }
+  renderMain();
 }
 
 /* ============================================================
@@ -135,7 +206,8 @@ function renderError(message) {
 async function init() {
   try {
     await loadData();
-    renderMain();
+    window.addEventListener('hashchange', router);
+    router(); // 딥링크 초기 진입(#/q/{id} 직접 진입·새로고침) 대응
   } catch (err) {
     renderError('질문 데이터를 불러오지 못했습니다. 새로고침하거나 정적 서버로 접속했는지 확인하세요.');
     console.error(err);

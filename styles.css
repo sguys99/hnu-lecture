@@ -45,6 +45,7 @@
 
   /* 레이아웃 */
   --container-max: 1440px;
+  --reading-max: 672px;         /* 상세 뷰 읽기 컬럼 폭(참조: max-w-2xl) */
   --header-h: 52px;
 
   color-scheme: light;
@@ -386,7 +387,128 @@ button {
 }
 
 /* ============================================================
-   12. 반응형 (카드 그리드 열 수)
+   12. 상세 뷰 (좁은 읽기 컬럼 · 모노크롬)
+   ============================================================ */
+.detail {
+  max-width: var(--reading-max);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* 뒤로가기 — sticky + backdrop-blur(헤더 아래 고정), 그림자 없음 */
+.detail__back {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 10;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-sm);
+  margin-inline: calc(-1 * var(--space-sm));
+  border-radius: var(--radius-pill);
+  color: var(--muted-foreground);
+  font-size: var(--fs-caption);
+  background: var(--header-bg);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  transition: color 0.15s;
+}
+
+.detail__back:hover {
+  color: var(--foreground);
+}
+
+.detail__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.detail__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--fs-caption);
+}
+
+.detail__title {
+  font-size: var(--fs-display);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.374px;
+}
+
+.detail__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.detail__label {
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.detail__question {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+.detail__answer {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  white-space: pre-wrap;
+}
+
+.detail__answer--empty {
+  color: var(--muted-foreground);
+}
+
+/* 이전/다음 내비 — 상단 hairline, 그림자 없음 */
+.detail__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border);
+}
+
+.detail__nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--muted-foreground);
+  font-size: var(--fs-caption);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.detail__nav-link:hover {
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+.detail__nav-link--next {
+  margin-left: auto;
+}
+
+/* 비활성 자리(인접 문항 없음) — 레이아웃 유지용 빈 칸 */
+.detail__nav-link.is-disabled {
+  border: 0;
+  min-height: 0;
+  pointer-events: none;
+}
+
+/* ============================================================
+   13. 반응형 (카드 그리드 열 수)
    ============================================================ */
 @media (min-width: 640px) {
   .card-grid {
@@ -402,7 +524,8 @@ button {
 
 @media (max-width: 419px) {
   .hero__title,
-  .part-section__title {
+  .part-section__title,
+  .detail__title {
     font-size: 28px;
   }
 }
