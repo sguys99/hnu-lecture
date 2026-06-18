@@ -25,17 +25,17 @@
 **목표:** 무빌드 정적 사이트 기반 구조 확보(불필요한 템플릿 잔재 제거 + 빈 파일 골격 생성)
 
 ### 0-1. 스타터 잔재 정리
-- [ ] 루트의 Next.js 템플릿 잔재(불필요한 `components.json`, shadcn 관련 설정 등) 영향 여부 확인 — 정적 사이트와 무관하면 그대로 두되 README만 갱신
-- [ ] `.gitignore`에 정적 사이트 배포 산출물/임시 파일 정책 확인
+- [x] 루트의 Next.js 템플릿 잔재(불필요한 `components.json`, shadcn 관련 설정 등) 영향 여부 확인 — 정적 사이트와 무관하므로 그대로 두고 README를 정적 사이트 기준으로 갱신
+- [x] `.gitignore`에 정적 사이트 배포 산출물/임시 파일 정책 확인 — `data/{raw,intermediate,processed}/*`만 무시, `data/questions.json`은 추적됨(수정 불필요)
 
 ### 0-2. 파일 골격 생성(상대 경로 기준)
-- [ ] `index.html` — 마크업 스켈레톤 + Pretendard CDN 링크 + `styles.css`/`app.js` **상대 경로** 로드(`./styles.css`, `./app.js`)
-- [ ] `styles.css` — 빈 파일(Phase 2에서 토큰 채움)
-- [ ] `app.js` — 빈 파일(Phase 3~6에서 로직 채움)
-- [ ] `data/questions.json` — 빈 `{"questions": []}` 골격
+- [x] `index.html` — 마크업 스켈레톤 + Pretendard CDN 링크 + `styles.css`/`app.js` **상대 경로** 로드(`./styles.css`, `./app.js`)
+- [x] `styles.css` — 빈 파일(Phase 2에서 토큰 채움)
+- [x] `app.js` — 빈 파일(Phase 3~6에서 로직 채움)
+- [x] `data/questions.json` — 빈 `{"questions": []}` 골격
 
 ### 0-3. 로컬 미리보기 확인
-- [ ] `python3 -m http.server` 등으로 루트 서빙 → `index.html` 200 응답 확인(빌드 도구 없이 동작)
+- [x] `python3 -m http.server`로 루트 서빙 → `index.html`/`styles.css`/`app.js`/`data/questions.json` 모두 200 응답 확인, `json.tool` 유효성 통과(빌드 도구 없이 동작)
 
 ---
 
