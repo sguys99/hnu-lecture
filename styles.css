@@ -1,3 +1,246 @@
 /* AI 세미나 Q&A — 스타일
- * DESIGN.md 토큰 기반. Phase 2에서 채웁니다.
+ * DESIGN.md 토큰 기반 + 참조 저장소(global-ai-news) 화면 디자인 반영.
+ * 모노크롬(잉크 기반) 인터랙션 모델. 파랑은 본문 인라인 링크 전용.
  */
+
+/* ============================================================
+   1. 디자인 토큰 (라이트 기본)
+   ============================================================ */
+:root {
+  /* 색상 — 참조 globals.css(light) */
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
+  --card: #ffffff;
+  --card-foreground: #1d1d1f;
+  --muted-foreground: #7a7a7a;
+  --border: #e0e0e0;
+  --ring: #1d1d1f;
+  --link: #0066cc;              /* Action Blue — 본문 인라인 링크 전용 */
+  --header-bg: rgba(245, 245, 247, 0.8);
+
+  /* radius 스케일 — DESIGN.md */
+  --radius-sm: 8px;
+  --radius-md: 11px;
+  --radius-lg: 18px;
+  --radius-pill: 9999px;
+
+  /* spacing 스케일 — DESIGN.md */
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 17px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+  --space-section: 80px;
+
+  /* 타이포 */
+  --font-sans: 'Pretendard', 'SF Pro Text', system-ui, -apple-system, sans-serif;
+  --fs-body: 17px;
+  --lh-body: 1.47;
+  --ls-body: -0.374px;
+  --fs-caption: 14px;
+  --fs-title: 18px;
+  --fs-display: 34px;
+
+  /* 레이아웃 */
+  --container-max: 1440px;
+  --header-h: 52px;
+
+  color-scheme: light;
+}
+
+/* ============================================================
+   2. 다크 테마
+   ============================================================ */
+[data-theme="dark"] {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #1d1d1f;
+  --card-foreground: #ffffff;
+  --muted-foreground: #cccccc;
+  --border: #333333;
+  --ring: #f5f5f7;
+  --link: #2997ff;             /* Sky Link Blue — 다크 표면 인라인 링크 */
+  --header-bg: rgba(0, 0, 0, 0.8);
+
+  color-scheme: dark;
+}
+
+/* 시스템 기본값 존중 — 명시적 data-theme 속성이 항상 우선 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #000000;
+    --foreground: #ffffff;
+    --card: #1d1d1f;
+    --card-foreground: #ffffff;
+    --muted-foreground: #cccccc;
+    --border: #333333;
+    --ring: #f5f5f7;
+    --link: #2997ff;
+    --header-bg: rgba(0, 0, 0, 0.8);
+
+    color-scheme: dark;
+  }
+}
+
+/* ============================================================
+   3. 기본 리셋 · 바디
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  background: var(--background);
+  color: var(--foreground);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* weight 래더: 300 / 400 / 600 / 700 만 사용 (500 금지) */
+h1, h2, h3, h4 {
+  font-weight: 600;
+  letter-spacing: -0.374px;
+  line-height: 1.1;
+}
+
+/* 링크: 기본은 색 상속, 본문 인라인 링크만 액센트 파랑 */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.prose a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   4. 레이아웃 컨테이너
+   ============================================================ */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--space-lg);
+}
+
+/* ============================================================
+   5. 헤더
+   ============================================================ */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  background: var(--header-bg);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+/* 헤더 내부 컨테이너: 타이틀(좌) + 액션 슬롯(우) */
+.site-header > .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.site-title {
+  font-size: var(--fs-title);
+  font-weight: 600;
+  letter-spacing: -0.374px;
+  line-height: 1;
+  color: var(--foreground);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* ============================================================
+   6. 메인
+   ============================================================ */
+#app {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+/* Part 섹션 헤더 (Phase 3에서 사용) */
+#app h2 {
+  font-size: var(--fs-display);
+  font-weight: 600;
+  letter-spacing: -0.374px;
+  line-height: 1.1;
+}
+
+/* ============================================================
+   7. 푸터
+   ============================================================ */
+.site-footer {
+  flex-shrink: 0;
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  color: var(--muted-foreground);
+  padding: var(--space-xxl) var(--space-lg);
+  font-size: var(--fs-caption);
+  text-align: center;
+}
