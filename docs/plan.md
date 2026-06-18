@@ -64,13 +64,13 @@
 **의존성:** Phase 0 (Phase 3~7과 병렬 보완 가능)
 
 ### 2-1. CSS 변수(디자인 토큰)
-- [ ] `:root`에 토큰 정의: 액센트 `#0066cc`, 캔버스 `#ffffff`/`#f5f5f7`, hairline `#e0e0e0`, radius 18px(`rounded.lg`)·pill, spacing 24px, 본문 17px(line-height 1.47)
-- [ ] 폰트 스택: `'Pretendard', 'SF Pro Text', system-ui, -apple-system, sans-serif`
-- [ ] 다크 테마 변수 세트 정의(`[data-theme="dark"]`, `DESIGN.md` 다크 타일 토큰 기준) + `prefers-color-scheme` 기본값
+- [x] `:root`에 토큰 정의: 참조(global-ai-news) globals.css 값 채택 — 캔버스 `#f5f5f7`/`#ffffff`, foreground `#1d1d1f`, hairline `#e0e0e0`, radius 18px(`rounded.lg`)·pill, spacing 스케일, 본문 17px(line-height 1.47). 모노크롬 잉크 모델 — 파랑 `#0066cc`는 본문 인라인 링크 전용(`--link`)
+- [x] 폰트 스택: `'Pretendard', 'SF Pro Text', system-ui, -apple-system, sans-serif`
+- [x] 다크 테마 변수 세트 정의(`[data-theme="dark"]`, 참조 다크 토큰 `#000`/`#1d1d1f`/`#333` 기준) + `prefers-color-scheme` 기본값(명시적 속성 우선)
 
 ### 2-2. 기본 레이아웃·타이포 규칙
-- [ ] 헤더("AI 세미나 Q&A")/푸터 스타일, 본문 타이포 래더(300/400/600/700, weight 500 금지)
-- [ ] **Do/Don't 준수**: 단일 액센트 컬러, UI 크롬 그림자 금지, radius grammar 혼용 금지
+- [x] 헤더("AI 세미나 Q&A", sticky+backdrop-blur+hairline)/푸터 스타일, 본문 타이포 래더(300/400/600/700, weight 500 금지)
+- [x] **Do/Don't 준수**: 단일 액센트(모노크롬+인라인 링크 파랑), UI 크롬 그림자 금지, radius grammar 혼용 금지
 
 ---
 
@@ -80,16 +80,16 @@
 **의존성:** Phase 1, Phase 2
 
 ### 3-1. 데이터 로드
-- [ ] `app.js`에서 `fetch('./data/questions.json')`(상대 경로) → 파싱 → 상태 보관
+- [x] `app.js`에서 `fetch('./data/questions.json')`(상대 경로) → 파싱 → 상태 보관
 
 ### 3-2. 필터 탭 (pill)
-- [ ] `전체` / `Part 1` / `Part 2` / `Part 3` pill 탭 렌더링 + 활성 상태 표시
-- [ ] 필터 선택 시 해당 Part 카드만 표시(전체는 Part별 섹션 헤더로 그룹화)
+- [x] `전체` / `Part 1` / `Part 2` / `Part 3` pill 탭 렌더링 + 활성 상태 표시(모노크롬 색반전)
+- [x] 필터 선택 시 해당 Part 카드만 표시(전체는 Part별 섹션 헤더로 그룹화)
 
 ### 3-3. 질문 카드
-- [ ] 카드 구성: 질문 번호(Q1 등) · Part 뱃지 · 소제목 · 질문 요약 미리보기
-- [ ] 카드 전체 클릭 가능 영역(터치 타깃 ≥ 44×44px) → 클릭 시 `#/q/{id}` 이동
-- [ ] 카드 스타일: 1px hairline 보더, radius 18px, padding 24px, 그림자 없음
+- [x] 카드 구성: 질문 번호(Q1 등) · Part 뱃지 · 소제목 · 질문 요약 미리보기(3줄 클램프)
+- [x] 카드 전체 클릭 가능 영역(`<a href="#/q/{id}">`, 터치 타깃 ≥ 44×44px) → 클릭 시 `#/q/{id}` 이동
+- [x] 카드 스타일: 1px hairline 보더, radius 18px, padding 24px, 그림자 없음
 
 ---
 

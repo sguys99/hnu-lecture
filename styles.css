@@ -244,3 +244,165 @@ button {
   font-size: var(--fs-caption);
   text-align: center;
 }
+
+/* ============================================================
+   8. 히어로 (메인 뷰 인트로)
+   ============================================================ */
+.hero {
+  margin-bottom: var(--space-xl);
+}
+
+.hero__title {
+  font-size: var(--fs-display);
+  font-weight: 600;
+  letter-spacing: -0.374px;
+  line-height: 1.1;
+}
+
+.hero__desc {
+  margin-top: var(--space-sm);
+  color: var(--muted-foreground);
+  font-size: var(--fs-body);
+}
+
+/* ============================================================
+   9. 필터 탭 (pill · 모노크롬)
+   ============================================================ */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-xl);
+}
+
+.filter-tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: var(--fs-caption);
+  font-weight: 400;
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+}
+
+.filter-tab:hover {
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+.filter-tab.is-active {
+  background: var(--foreground);
+  border-color: var(--foreground);
+  color: var(--background);
+  font-weight: 600;
+}
+
+/* ============================================================
+   10. Part 섹션 + 카드 그리드
+   ============================================================ */
+.part-section + .part-section {
+  margin-top: var(--space-xxl);
+}
+
+.part-section__title {
+  font-size: var(--fs-display);
+  font-weight: 600;
+  letter-spacing: -0.374px;
+  line-height: 1.1;
+  margin-bottom: var(--space-lg);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+/* ============================================================
+   11. 질문 카드 (모노크롬 · 그림자 없음)
+   ============================================================ */
+.q-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: border-color 0.15s;
+}
+
+.q-card:hover {
+  border-color: var(--foreground);
+}
+
+.q-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-caption);
+}
+
+.q-card__num {
+  font-weight: 600;
+}
+
+.q-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-xs);
+  border: 1px solid var(--foreground);
+  border-radius: var(--radius-pill);
+  color: var(--foreground);
+  font-size: var(--fs-caption);
+  font-weight: 600;
+}
+
+.q-card__title {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 1.24;
+  letter-spacing: -0.374px;
+}
+
+.q-card__preview {
+  color: var(--muted-foreground);
+  font-size: var(--fs-caption);
+  line-height: 1.43;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+.load-error {
+  color: var(--muted-foreground);
+}
+
+/* ============================================================
+   12. 반응형 (카드 그리드 열 수)
+   ============================================================ */
+@media (min-width: 640px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 419px) {
+  .hero__title,
+  .part-section__title {
+    font-size: 28px;
+  }
+}
