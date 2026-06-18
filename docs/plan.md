@@ -154,19 +154,25 @@
 **의존성:** Phase 1(스키마), Phase 5(렌더링 확인) — UI와 병렬 진행 가능
 
 ### 7-1. 답변 작성 규칙 적용
-- [ ] 각 답변 **400자 미만(한글)**, **개조식**(불릿·번호·표), 줄글 지양
-- [ ] 대학원생이 실무·연구에 바로 활용 가능한 구체적 수준
-- [ ] 철학적 문항(Q12~Q19)은 **강사로서 명확한 입장 + 핵심 근거 2~3개** 개조식 제시
-- [ ] 출처/참고 링크는 본문에 미포함(웹검색은 검증 용도)
+- [x] 각 답변 **400자 미만(한글)**, **개조식**(불릿·번호·표), 줄글 지양 — Q1~Q19 전부 visible 203자 이하
+- [x] 대학원생이 실무·연구에 바로 활용 가능한 구체적 수준
+- [x] 철학적 문항(Q12~Q19)은 **강사로서 명확한 입장 + 핵심 근거 2~3개** 개조식 제시(`**입장:**` + 번호 근거)
+- [x] 출처/참고 링크는 본문에 미포함(웹검색은 검증 용도)
 
 ### 7-2. 웹검색 검증 문항 작성
-- [ ] Part 1·2 도구/기법 문항 + Q13(Mechanistic Interpretability), Q14(Emergent Ability), Q16(The Bitter Lesson), Q18(Chinese Room) **웹검색 검증 후 작성**
+- [x] Q13(Mechanistic Interpretability=SAE·circuit), Q14(Emergent Ability=Schaeffer 2023 mirage), Q16(The Bitter Lesson=Sutton), Q18(Chinese Room=Searle) + 최신 도구(Q7 Claude Cowork·Code·Codex, Q10·Q11) **웹검색 검증 후 작성**
 
 ### 7-3. Part별 일괄 작성·점검
-- [ ] Part 1 (Q1~Q6) 답변 작성·렌더링 확인
-- [ ] Part 2 (Q7~Q11) 답변 작성·렌더링 확인
-- [ ] Part 3 (Q12~Q19) 답변 작성·렌더링 확인
-- [ ] 19문항 전부 400자 미만·개조식 충족 최종 검수
+- [x] Part 1 (Q1~Q6) 답변 작성·렌더링 확인 — Q2~Q6 신규(Q1 기존)
+- [x] Part 2 (Q7~Q11) 답변 작성·렌더링 확인
+- [x] Part 3 (Q12~Q19) 답변 작성·렌더링 확인 — Q12~Q18 신규(Q19 기존)
+- [x] 19문항 전부 400자 미만·개조식 충족 최종 검수(`parseMarkdown` Node 검증 + `json.tool` 통과)
+
+### 7-4. (추가) global-ai-news 디자인 보강
+- [x] 검색 입력(client-side 제목·질문 검색, 필터와 AND 결합, 0건 빈 상태)
+- [x] 카드 메타행 정렬(Part 배지 좌 / Q번호 우, ArticleCard 패턴)
+- [x] 모바일 필터 바텀시트(FilterSheet) — 데스크톱은 인라인 pill 유지
+- [x] 모바일 하단 탭바(BottomTabBar, 피드·검색) — 데스크톱 숨김, safe-area 대응
 
 ---
 

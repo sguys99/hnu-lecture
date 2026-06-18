@@ -22,6 +22,7 @@
   --radius-sm: 8px;
   --radius-md: 11px;
   --radius-lg: 18px;
+  --radius-2xl: 32px;           /* 모바일 바텀시트 상단 모서리(참조: rounded-t-2xl) */
   --radius-pill: 9999px;
 
   /* spacing 스케일 — DESIGN.md */
@@ -47,6 +48,7 @@
   --container-max: 1440px;
   --reading-max: 672px;         /* 상세 뷰 읽기 컬럼 폭(참조: max-w-2xl) */
   --header-h: 52px;
+  --bottom-bar-h: 56px;         /* 모바일 하단 탭바 높이(참조 BottomTabBar) */
 
   --prose-th-bg: #f5f5f7;       /* 답변 표 헤더 옅은 면(캔버스와 동일) */
 
@@ -314,13 +316,58 @@ button {
 }
 
 /* ============================================================
-   9. 필터 탭 (pill · 모노크롬)
+   9. 툴바 (검색 + 필터)
    ============================================================ */
+.toolbar {
+  margin-bottom: var(--space-xl);
+}
+
+/* 검색 입력 (참조 SearchInput) — h-11(44px), rounded-lg, 그림자 없음 */
+.search-row {
+  position: relative;
+  margin-bottom: var(--space-md);
+}
+
+.search-row__icon {
+  position: absolute;
+  top: 50%;
+  left: var(--space-sm);
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--space-md) 0 calc(var(--space-sm) * 2 + 18px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: var(--fs-body);
+  letter-spacing: var(--ls-body);
+  transition: border-color 0.15s;
+}
+
+.search-input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.search-input:hover {
+  border-color: var(--foreground);
+}
+
+/* search 타입 기본 클리어 버튼 정리(모노크롬 유지) */
+.search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+/* 필터 탭 (pill · 모노크롬) */
 .filters {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xs);
-  margin-bottom: var(--space-xl);
 }
 
 .filter-tab {
@@ -347,6 +394,105 @@ button {
   border-color: var(--foreground);
   color: var(--background);
   font-weight: 600;
+}
+
+/* 모바일 필터 트리거(데스크톱 숨김) — 현재 선택 표시 */
+.filter-trigger {
+  display: none;
+  align-items: center;
+  gap: var(--space-xs);
+  min-height: 44px;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--foreground);
+  font-size: var(--fs-caption);
+}
+
+.filter-trigger__current {
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+/* ---- 모바일 필터 바텀시트 (참조 FilterSheet) ---- */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.sheet-backdrop.is-open {
+  opacity: 1;
+}
+
+.filter-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg)
+    calc(var(--space-lg) + env(safe-area-inset-bottom));
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  transform: translateY(100%);
+  transition: transform 0.2s ease;
+}
+
+.filter-sheet.is-open {
+  transform: translateY(0);
+}
+
+.filter-sheet__handle {
+  width: 36px;
+  height: 4px;
+  margin: 0 auto var(--space-xs);
+  border-radius: var(--radius-pill);
+  background: var(--border);
+}
+
+.filter-sheet__title {
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.filter-sheet__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.filter-sheet__apply {
+  width: 100%;
+  min-height: 44px;
+  margin-top: var(--space-xs);
+  border: 1px solid var(--foreground);
+  border-radius: var(--radius-pill);
+  background: var(--foreground);
+  color: var(--background);
+  font-size: var(--fs-body);
+  font-weight: 600;
+}
+
+/* 검색 0건 빈 상태 */
+.empty-state {
+  color: var(--muted-foreground);
+  padding: var(--space-xl) 0;
+  text-align: center;
+}
+
+/* 시트 열림 동안 본문 스크롤 락 */
+body.no-scroll {
+  overflow: hidden;
 }
 
 /* ============================================================
@@ -630,7 +776,47 @@ button {
 }
 
 /* ============================================================
-   13. 반응형 (카드 그리드 열 수)
+   13. 모바일 하단 탭바 (참조 BottomTabBar) — 기본 숨김(데스크톱)
+   ============================================================ */
+.bottom-tab-bar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  height: calc(var(--bottom-bar-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--header-bg);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-top: 1px solid var(--border);
+}
+
+.bottom-tab {
+  flex: 1;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  transition: color 0.15s;
+}
+
+.bottom-tab.is-active {
+  color: var(--foreground);
+}
+
+.bottom-tab.is-active .bottom-tab__label {
+  font-weight: 600;
+}
+
+/* ============================================================
+   14. 반응형 (카드 그리드 열 수 + 모바일 UI 토글)
    ============================================================ */
 @media (min-width: 640px) {
   .card-grid {
@@ -641,6 +827,30 @@ button {
 @media (min-width: 1024px) {
   .card-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* md(768px) 기준: 모바일은 트리거+시트+하단탭바, 데스크톱은 인라인 필터 */
+@media (max-width: 767px) {
+  .filters {
+    display: none;
+  }
+  .filter-trigger {
+    display: inline-flex;
+  }
+  .bottom-tab-bar {
+    display: flex;
+  }
+  /* 하단 탭바에 가리지 않도록 본문 하단 여백 확보 */
+  body {
+    padding-bottom: calc(var(--bottom-bar-h) + env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 768px) {
+  .filter-sheet,
+  .sheet-backdrop {
+    display: none !important;
   }
 }
 

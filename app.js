@@ -9,6 +9,7 @@
    ============================================================ */
 let QUESTIONS = [];
 let activeFilter = 'all'; // 'all' | 1 | 2 | 3
+let searchQuery = '';     // 카드 검색어(제목·질문 전문 대상)
 
 const PARTS = [1, 2, 3];
 
@@ -184,12 +185,20 @@ async function loadData() {
 /* ============================================================
    렌더링
    ============================================================ */
+// 검색어 일치 여부(대소문자 무시, 제목 + 질문 전문 부분일치).
+function matchesSearch(q) {
+  const query = searchQuery.trim().toLowerCase();
+  if (!query) return true;
+  return `${q.title} ${q.question}`.toLowerCase().includes(query);
+}
+
+// 참조 ArticleCard 패턴: 메타행 = Part 배지(좌) + Q번호(우, muted).
 function cardHtml(q) {
   return `
     <a class="q-card" href="#/q/${q.id}">
       <div class="q-card__meta">
-        <span class="q-card__num">Q${q.id}</span>
         <span class="q-badge">Part ${q.part}</span>
+        <span class="q-card__num">Q${q.id}</span>
       </div>
       <h3 class="q-card__title">${escapeHtml(q.title)}</h3>
       <p class="q-card__preview">${escapeHtml(q.question)}</p>
@@ -197,7 +206,7 @@ function cardHtml(q) {
 }
 
 function sectionHtml(part) {
-  const items = questionsByPart(part);
+  const items = questionsByPart(part).filter(matchesSearch);
   if (items.length === 0) return '';
   const cards = items.map(cardHtml).join('');
   return `
@@ -207,27 +216,36 @@ function sectionHtml(part) {
     </section>`;
 }
 
+const FILTER_TABS = [
+  { value: 'all', label: '전체' },
+  { value: 1, label: 'Part 1' },
+  { value: 2, label: 'Part 2' },
+  { value: 3, label: 'Part 3' },
+];
+
 function tabsHtml() {
-  const tabs = [
-    { value: 'all', label: '전체' },
-    { value: 1, label: 'Part 1' },
-    { value: 2, label: 'Part 2' },
-    { value: 3, label: 'Part 3' },
-  ];
-  return tabs
-    .map((t) => {
-      const active = String(t.value) === String(activeFilter) ? ' is-active' : '';
-      return `<button type="button" class="filter-tab${active}" data-filter="${t.value}" aria-pressed="${active ? 'true' : 'false'}">${t.label}</button>`;
-    })
-    .join('');
+  return FILTER_TABS.map((t) => {
+    const active = String(t.value) === String(activeFilter) ? ' is-active' : '';
+    return `<button type="button" class="filter-tab${active}" data-filter="${t.value}" aria-pressed="${active ? 'true' : 'false'}">${t.label}</button>`;
+  }).join('');
+}
+
+// 현재 필터의 표시 라벨(모바일 필터 트리거 버튼용).
+function currentFilterLabel() {
+  const tab = FILTER_TABS.find((t) => String(t.value) === String(activeFilter));
+  return tab ? tab.label : '전체';
+}
+
+function emptyStateHtml() {
+  return `<p class="empty-state">검색 결과가 없습니다.</p>`;
 }
 
 function groupsHtml() {
   const parts = activeFilter === 'all' ? PARTS : [Number(activeFilter)];
-  return parts.map(sectionHtml).join('');
+  return parts.map(sectionHtml).join('') || emptyStateHtml();
 }
 
-// 필터 변경 시 그룹 영역만 다시 그린다.
+// 필터/검색 변경 시 그룹 영역만 다시 그린다(검색 입력 포커스 유지).
 function renderGroups() {
   const groups = app.querySelector('#groups');
   if (groups) groups.innerHTML = groupsHtml();
@@ -239,22 +257,102 @@ function renderMain() {
       <h1 class="hero__title">AI 세미나 Q&amp;A</h1>
       <p class="hero__desc">대학원생 대상 AI 세미나에서 수집한 19개 질문과 답변</p>
     </section>
-    <div class="filters" role="tablist" aria-label="Part 필터">${tabsHtml()}</div>
-    <div id="groups">${groupsHtml()}</div>`;
+    <div class="toolbar">
+      <div class="search-row">
+        <svg class="search-row__icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true" focusable="false">
+          <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+        </svg>
+        <input id="search-input" class="search-input" type="search"
+               placeholder="질문 제목·내용 검색" aria-label="질문 검색"
+               value="${escapeHtml(searchQuery)}" />
+      </div>
+      <div class="filters" role="tablist" aria-label="Part 필터">${tabsHtml()}</div>
+      <button type="button" class="filter-trigger" id="filter-trigger"
+              aria-haspopup="dialog" aria-expanded="false">
+        <span class="filter-trigger__label">필터</span>
+        <span class="filter-trigger__current">${currentFilterLabel()}</span>
+      </button>
+    </div>
+    <div id="groups">${groupsHtml()}</div>
 
-  const filters = app.querySelector('.filters');
-  filters.addEventListener('click', (e) => {
-    const btn = e.target.closest('.filter-tab');
-    if (!btn) return;
-    const value = btn.dataset.filter;
-    activeFilter = value === 'all' ? 'all' : Number(value);
-    // 탭 활성 상태 갱신
-    filters.querySelectorAll('.filter-tab').forEach((el) => {
-      const on = el.dataset.filter === value;
-      el.classList.toggle('is-active', on);
-      el.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-    renderGroups();
+    <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+    <div class="filter-sheet" id="filter-sheet" role="dialog" aria-modal="true" aria-label="Part 필터" hidden>
+      <div class="filter-sheet__handle" aria-hidden="true"></div>
+      <div class="filter-sheet__title">Part 필터</div>
+      <div class="filter-sheet__options" role="tablist">${tabsHtml()}</div>
+      <button type="button" class="filter-sheet__apply" id="sheet-apply">결과 보기</button>
+    </div>`;
+}
+
+// 필터 선택 반영: 상태 + 모든 pill(데스크톱·시트) 활성표시 + 트리거 라벨 + 그룹 재렌더.
+function setFilter(value) {
+  activeFilter = value === 'all' ? 'all' : Number(value);
+  app.querySelectorAll('.filter-tab').forEach((el) => {
+    const on = el.dataset.filter === value;
+    el.classList.toggle('is-active', on);
+    el.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  const cur = app.querySelector('.filter-trigger__current');
+  if (cur) cur.textContent = currentFilterLabel();
+  renderGroups();
+}
+
+/* ---- 모바일 필터 바텀시트 ---- */
+function openSheet() {
+  const sheet = document.getElementById('filter-sheet');
+  const backdrop = document.getElementById('sheet-backdrop');
+  const trigger = document.getElementById('filter-trigger');
+  if (!sheet || !backdrop) return;
+  sheet.hidden = false;
+  backdrop.hidden = false;
+  requestAnimationFrame(() => {
+    sheet.classList.add('is-open');
+    backdrop.classList.add('is-open');
+  });
+  document.body.classList.add('no-scroll');
+  if (trigger) trigger.setAttribute('aria-expanded', 'true');
+}
+
+function closeSheet() {
+  const sheet = document.getElementById('filter-sheet');
+  const backdrop = document.getElementById('sheet-backdrop');
+  const trigger = document.getElementById('filter-trigger');
+  document.body.classList.remove('no-scroll');
+  if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  if (!sheet || !backdrop) return;
+  sheet.classList.remove('is-open');
+  backdrop.classList.remove('is-open');
+  setTimeout(() => {
+    if (sheet && !sheet.classList.contains('is-open')) sheet.hidden = true;
+    if (backdrop && !backdrop.classList.contains('is-open')) backdrop.hidden = true;
+  }, 200);
+}
+
+// 메인 뷰 인터랙션(검색·필터·시트) — #app에 위임 1회 등록(재렌더에도 유지).
+function initMainEvents() {
+  app.addEventListener('click', (e) => {
+    const tab = e.target.closest('.filter-tab');
+    if (tab) {
+      setFilter(tab.dataset.filter);
+      if (e.target.closest('#filter-sheet')) closeSheet();
+      return;
+    }
+    if (e.target.closest('#filter-trigger')) return openSheet();
+    if (e.target.closest('#sheet-apply')) return closeSheet();
+    if (e.target.id === 'sheet-backdrop') return closeSheet();
+  });
+
+  let debounce;
+  app.addEventListener('input', (e) => {
+    if (e.target.id !== 'search-input') return;
+    const val = e.target.value;
+    clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      searchQuery = val;
+      renderGroups();
+    }, 300);
   });
 }
 
@@ -318,6 +416,7 @@ function parseHash() {
 
 // 현재 해시에 맞는 뷰를 렌더. 없는 id는 메인으로 폴백.
 function router() {
+  closeSheet(); // 뷰 전환 시 열린 시트·스크롤 락 정리
   const route = parseHash();
   if (route.view === 'detail') {
     const q = QUESTIONS.find((item) => item.id === route.id);
@@ -326,10 +425,46 @@ function router() {
       return;
     }
     renderDetail(q);
+    setBottomTab('detail');
     window.scrollTo(0, 0);
     return;
   }
   renderMain();
+  setBottomTab('main');
+}
+
+/* ============================================================
+   모바일 하단 탭바 (참조 BottomTabBar) — 피드 / 검색
+   ============================================================ */
+// 현재 뷰에 맞춰 탭 활성 표시.
+function setBottomTab(view) {
+  const feed = document.getElementById('tab-feed');
+  if (feed) {
+    const on = view === 'main';
+    feed.classList.toggle('is-active', on);
+    feed.setAttribute('aria-current', on ? 'page' : 'false');
+  }
+}
+
+function initBottomBar() {
+  const search = document.getElementById('tab-search');
+  if (search) {
+    search.addEventListener('click', () => {
+      const focusInput = () => {
+        const input = document.getElementById('search-input');
+        if (input) {
+          input.scrollIntoView({ block: 'center' });
+          input.focus();
+        }
+      };
+      if (parseHash().view !== 'main') {
+        location.hash = '#/';
+        setTimeout(focusInput, 0); // 메인 렌더 후 포커스
+      } else {
+        focusInput();
+      }
+    });
+  }
 }
 
 /* ============================================================
@@ -369,6 +504,11 @@ function initTheme() {
    ============================================================ */
 async function init() {
   initTheme(); // 데이터 로드와 무관 — fetch 실패와 상관없이 토글 보장
+  initMainEvents(); // 검색·필터·시트 위임 핸들러(#app, 1회 등록)
+  initBottomBar();
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSheet();
+  });
   try {
     await loadData();
     window.addEventListener('hashchange', router);
