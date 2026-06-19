@@ -2,7 +2,8 @@
 
 대학원생 대상 AI 세미나에서 수집한 **19개 질문**을 카드 피드로 전시하고, 카드 클릭 시 질문 전문과 사전 작성 답변을 보여주는 **무빌드(build-less) 정적 웹사이트**입니다.
 
-순수 HTML/CSS/Vanilla JS만 사용하며, 빌드·서버 없이 GitHub Pages(`username.github.io/repo/`)에 상대 경로로 배포합니다.
+순수 HTML/CSS/Vanilla JS만 사용하며, 빌드·서버 없이 GitHub Pages에 상대 경로로 배포합니다.
+배포 URL: `https://sguys99.github.io/hnu-lecture/`
 
 > 상세 요구사항은 [docs/PRD.md](docs/PRD.md), 작업 계획은 [docs/plan.md](docs/plan.md)를 참고하세요.
 
@@ -14,8 +15,19 @@
 | 로직 | Vanilla JavaScript (해시 라우팅·필터·렌더링) |
 | 데이터 | 정적 JSON 파일 (`data/questions.json`) |
 | 폰트 | Pretendard(CDN) + `SF Pro Text` / `system-ui` 폴백 |
+| 다크모드 | CSS `prefers-color-scheme` + localStorage 토글 |
+| 마크다운 | 내장 미니 파서 (외부 라이브러리 없음) |
 | 빌드 | 없음 (번들러·npm 의존성 없음) |
-| 배포 | GitHub Pages (`github.io`, 상대 경로) |
+| 배포 | GitHub Pages (상대 경로) |
+
+## 주요 기능
+
+- **카드 피드** — Part별 필터 탭 + 19문항 그리드
+- **상세 뷰** — 해시 라우팅 + 딥링크 (`#/q/{id}`), 브라우저 뒤로가기 지원
+- **다크모드** — 헤더 토글 버튼 + `prefers-color-scheme` 자동 감지 + localStorage 저장
+- **반응형** — 데스크톱 3~4열 → 태블릿 2열 → 모바일 1열
+- **마크다운 렌더링** — 답변 본문의 불릿·번호 목록·강조를 HTML로 변환
+- **접근성** — ARIA 레이블, 키보드 탐색, 44px 터치 타깃
 
 ## 빠른 시작 (로컬 미리보기)
 
@@ -33,10 +45,10 @@ python3 -m http.server 8000
 .
 ├── index.html          # 마크업 + 폰트/스타일/스크립트 로드
 ├── styles.css          # DESIGN.md 토큰 기반 스타일
-├── app.js              # 해시 라우팅 + 카드/상세 렌더링 + 필터
+├── app.js              # 해시 라우팅 + 카드/상세 렌더링 + 필터 + 다크모드
 ├── data/
 │   └── questions.json  # 19문항 질문 + 사전 작성 답변
-├── docs/               # PRD.md, plan.md, question.md 등 문서
+├── docs/               # PRD.md, plan.md, question.md, meta-prompt.md 등 문서
 ├── DESIGN.md           # 디자인 토큰 (색상·타이포·간격·컴포넌트)
 └── img/                # 이미지 자산
 ```
