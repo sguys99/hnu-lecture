@@ -370,6 +370,11 @@ button {
   gap: var(--space-xs);
 }
 
+/* 세션(기관·날짜) 필터 줄 — Part 필터 줄과 시각적 분리 */
+.filters--session {
+  margin-bottom: var(--space-xs);
+}
+
 .filter-tab {
   display: inline-flex;
   align-items: center;
@@ -544,6 +549,16 @@ body.no-scroll {
 
 .q-card__num {
   font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* 카드/상세 배지 묶음 — 배지가 늘어도 줄바꿈 대응 */
+.q-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xxs);
+  min-width: 0;
 }
 
 .q-badge {
@@ -555,6 +570,14 @@ body.no-scroll {
   color: var(--foreground);
   font-size: var(--fs-caption);
   font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 기관·날짜 배지 — Part 배지보다 약한 톤(보더·텍스트 muted, 단색 유지) */
+.q-badge--soft {
+  border-color: var(--border);
+  color: var(--muted-foreground);
+  font-weight: 400;
 }
 
 .q-card__title {
@@ -622,6 +645,7 @@ body.no-scroll {
 
 .detail__meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-xs);
   font-size: var(--fs-caption);

@@ -8,8 +8,9 @@
    상태
    ============================================================ */
 let QUESTIONS = [];
-let activeFilter = 'all'; // 'all' | 1 | 2 | 3
-let searchQuery = '';     // 카드 검색어(제목·질문 전문 대상)
+let activeFilter = 'all';  // 'all' | 1 | 2 | 3
+let activeSession = 'all'; // 'all' | "기관|날짜" 세션 키
+let searchQuery = '';      // 카드 검색어(제목·질문 전문 대상)
 
 const PARTS = [1, 2, 3];
 
@@ -172,6 +173,24 @@ function partTitleOf(part) {
   return first ? first.partTitle : '';
 }
 
+// 세션 키(기관|날짜)를 만든다.
+function sessionKeyOf(q) {
+  return `${q.institution}|${q.date}`;
+}
+
+// 데이터에서 고유 세션(기관+날짜)을 도출 — 날짜 내림차순(최신 세미나 우선).
+// 향후 questions.json에 새 기관·날짜를 넣으면 코드 수정 없이 세션 탭이 자동 추가된다.
+function getSessions() {
+  const map = new Map();
+  QUESTIONS.forEach((q) => {
+    const key = sessionKeyOf(q);
+    if (!map.has(key)) {
+      map.set(key, { key, institution: q.institution, date: q.date });
+    }
+  });
+  return [...map.values()].sort((a, b) => b.date.localeCompare(a.date));
+}
+
 /* ============================================================
    데이터 로드
    ============================================================ */
@@ -192,12 +211,21 @@ function matchesSearch(q) {
   return `${q.title} ${q.question}`.toLowerCase().includes(query);
 }
 
-// 참조 ArticleCard 패턴: 메타행 = Part 배지(좌) + Q번호(우, muted).
+// 세션(기관+날짜) 일치 여부.
+function matchesSession(q) {
+  return activeSession === 'all' || sessionKeyOf(q) === activeSession;
+}
+
+// 참조 ArticleCard 패턴: 메타행 = 배지(좌, Part·기관·날짜) + Q번호(우, muted).
 function cardHtml(q) {
   return `
     <a class="q-card" href="#/q/${q.id}">
       <div class="q-card__meta">
-        <span class="q-badge">Part ${q.part}</span>
+        <span class="q-card__badges">
+          <span class="q-badge">Part ${q.part}</span>
+          <span class="q-badge q-badge--soft">${escapeHtml(q.institution)}</span>
+          <span class="q-badge q-badge--soft">${escapeHtml(q.date)}</span>
+        </span>
         <span class="q-card__num">Q${q.id}</span>
       </div>
       <h3 class="q-card__title">${escapeHtml(q.title)}</h3>
@@ -206,7 +234,9 @@ function cardHtml(q) {
 }
 
 function sectionHtml(part) {
-  const items = questionsByPart(part).filter(matchesSearch);
+  const items = questionsByPart(part).filter(
+    (q) => matchesSession(q) && matchesSearch(q)
+  );
   if (items.length === 0) return '';
   const cards = items.map(cardHtml).join('');
   return `
@@ -228,6 +258,19 @@ function tabsHtml() {
     const active = String(t.value) === String(activeFilter) ? ' is-active' : '';
     return `<button type="button" class="filter-tab${active}" data-filter="${t.value}" aria-pressed="${active ? 'true' : 'false'}">${t.label}</button>`;
   }).join('');
+}
+
+// 세션(기관+날짜) 필터 탭 — '전체' + 데이터에서 도출한 세션별 pill.
+function sessionTabsHtml() {
+  const make = (value, label) => {
+    const active = value === activeSession ? ' is-active' : '';
+    return `<button type="button" class="filter-tab${active}" data-session="${escapeHtml(value)}" aria-pressed="${active ? 'true' : 'false'}">${label}</button>`;
+  };
+  const all = make('all', '전체');
+  const items = getSessions()
+    .map((s) => make(s.key, `${escapeHtml(s.institution)} · ${escapeHtml(s.date)}`))
+    .join('');
+  return all + items;
 }
 
 // 현재 필터의 표시 라벨(모바일 필터 트리거 버튼용).
@@ -268,6 +311,7 @@ function renderMain() {
                placeholder="질문 제목·내용 검색" aria-label="질문 검색"
                value="${escapeHtml(searchQuery)}" />
       </div>
+      <div class="filters filters--session" role="tablist" aria-label="세미나 세션 필터">${sessionTabsHtml()}</div>
       <div class="filters" role="tablist" aria-label="Part 필터">${tabsHtml()}</div>
       <button type="button" class="filter-trigger" id="filter-trigger"
               aria-haspopup="dialog" aria-expanded="false">
@@ -278,24 +322,37 @@ function renderMain() {
     <div id="groups">${groupsHtml()}</div>
 
     <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
-    <div class="filter-sheet" id="filter-sheet" role="dialog" aria-modal="true" aria-label="Part 필터" hidden>
+    <div class="filter-sheet" id="filter-sheet" role="dialog" aria-modal="true" aria-label="필터" hidden>
       <div class="filter-sheet__handle" aria-hidden="true"></div>
+      <div class="filter-sheet__title">세미나 세션</div>
+      <div class="filter-sheet__options" role="tablist">${sessionTabsHtml()}</div>
       <div class="filter-sheet__title">Part 필터</div>
       <div class="filter-sheet__options" role="tablist">${tabsHtml()}</div>
       <button type="button" class="filter-sheet__apply" id="sheet-apply">결과 보기</button>
     </div>`;
 }
 
-// 필터 선택 반영: 상태 + 모든 pill(데스크톱·시트) 활성표시 + 트리거 라벨 + 그룹 재렌더.
+// Part 필터 선택 반영: 상태 + 모든 Part pill(데스크톱·시트) 활성표시 + 트리거 라벨 + 그룹 재렌더.
 function setFilter(value) {
   activeFilter = value === 'all' ? 'all' : Number(value);
-  app.querySelectorAll('.filter-tab').forEach((el) => {
+  app.querySelectorAll('.filter-tab[data-filter]').forEach((el) => {
     const on = el.dataset.filter === value;
     el.classList.toggle('is-active', on);
     el.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
   const cur = app.querySelector('.filter-trigger__current');
   if (cur) cur.textContent = currentFilterLabel();
+  renderGroups();
+}
+
+// 세션 필터 선택 반영: 상태 + 모든 세션 pill(데스크톱·시트) 활성표시 + 그룹 재렌더.
+function setSession(value) {
+  activeSession = value;
+  app.querySelectorAll('.filter-tab[data-session]').forEach((el) => {
+    const on = el.dataset.session === value;
+    el.classList.toggle('is-active', on);
+    el.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
   renderGroups();
 }
 
@@ -335,8 +392,12 @@ function initMainEvents() {
   app.addEventListener('click', (e) => {
     const tab = e.target.closest('.filter-tab');
     if (tab) {
-      setFilter(tab.dataset.filter);
-      if (e.target.closest('#filter-sheet')) closeSheet();
+      if (tab.dataset.session !== undefined) {
+        setSession(tab.dataset.session);
+      } else {
+        setFilter(tab.dataset.filter);
+      }
+      // 시트 안에서는 세션·Part 둘 다 고른 뒤 '결과 보기'로 닫는다(자동 닫기 안 함).
       return;
     }
     if (e.target.closest('#filter-trigger')) return openSheet();
@@ -385,6 +446,8 @@ function renderDetail(q) {
         <div class="detail__meta">
           <span class="q-card__num">Q${q.id}</span>
           <span class="q-badge">Part ${q.part}</span>
+          <span class="q-badge q-badge--soft">${escapeHtml(q.institution)}</span>
+          <span class="q-badge q-badge--soft">${escapeHtml(q.date)}</span>
         </div>
         <h1 class="detail__title">${escapeHtml(q.title)}</h1>
       </header>
