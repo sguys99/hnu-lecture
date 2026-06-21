@@ -508,7 +508,7 @@ body.no-scroll {
 }
 
 .part-section__title {
-  font-size: var(--fs-display);
+  font-size: 26px;
   font-weight: 600;
   letter-spacing: -0.374px;
   line-height: 1.1;
