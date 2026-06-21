@@ -276,7 +276,7 @@ button {
 
 /* Part 섹션 헤더 (Phase 3에서 사용) */
 #app h2 {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 600;
   letter-spacing: -0.374px;
   line-height: 1.1;
@@ -508,7 +508,7 @@ body.no-scroll {
 }
 
 .part-section__title {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 600;
   letter-spacing: -0.374px;
   line-height: 1.1;
